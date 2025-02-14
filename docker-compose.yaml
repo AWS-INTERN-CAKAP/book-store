@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: db_container
+    environment:
+      MYSQL_ROOT_PASSWORD: cakap234
+      MYSQL_DATABASE: book_store
+      MYSQL_USER: cakap
+      MYSQL_PASSWORD: cakap123
+    networks:
+      - myapp-network
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  migration:
+    build:
+      context: ./backend
+      dockerfile: ./build/migrate.dockerfile
+    container_name: migration_container
+    environment:
+      DATABASE_URL: mysql://cakap:cakap123@tcp(db:3306)/book_store?parseTime=true
+    command: ["-verbose", "up"]
+    depends_on:
+      - db
+    networks:
+      - myapp-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./build/app.dockerfile
+    ports:
+      - "8080:8080"
+    container_name: backend_container
+    environment:
+      DATABASE_USER: cakap
+      DATABASE_PASSWORD: cakap123
+      DATABASE_DATABASE: book_store
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      PORT: 8080
+    depends_on:
+      - db
+    networks:
+      - myapp-network
+
+networks:
+  myapp-network:
+    driver: bridge
+
+volumes:
+  db-data:
