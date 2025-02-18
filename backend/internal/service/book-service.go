@@ -34,7 +34,12 @@ func (b *bookService) CreateBook(input binder.CreateBook) (*dto.BookResponse, *e
 	var categories []*entity.Category
 	err := b.categoryRepo.FindByIDs(input.Categories, &categories)
 	if err != nil {
-		return nil, execption.NewApiExecption(http.StatusBadRequest, "Invalid category IDs")
+		return nil, execption.NewApiExecption(http.StatusInternalServerError, "Error retrieving categories")
+	}
+
+	// Ensure all requested categories exist
+	if len(categories) != len(input.Categories) {
+		return nil, execption.NewApiExecption(http.StatusBadRequest, "Some category IDs do not exist")
 	}
 
 	// Convert []*entity.Category to []entity.Category
