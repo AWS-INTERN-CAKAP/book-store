@@ -24,7 +24,7 @@ func (c *BookHandler) GetBooks(ctx echo.Context) error {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
 	}
 
-	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success Get Books", responsData))
+	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Success Get Books", responsData))
 }
 
 func (c *BookHandler) GetBook(ctx echo.Context) error {
@@ -44,7 +44,7 @@ func (c *BookHandler) GetBook(ctx echo.Context) error {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
 	}
 
-	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success Get Book", responsData))
+	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Success Get Book", responsData))
 }
 
 func (c *BookHandler) CreateBook(ctx echo.Context) error {
@@ -64,7 +64,7 @@ func (c *BookHandler) CreateBook(ctx echo.Context) error {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
 	}
 
-	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success Create Book", responsData))
+	return ctx.JSON(http.StatusCreated, response.SuccessResponse(http.StatusCreated, "Success Create Book", responsData))
 }
 
 func (c *BookHandler) UpdateBook(ctx echo.Context) error {
@@ -84,7 +84,7 @@ func (c *BookHandler) UpdateBook(ctx echo.Context) error {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
 	}
 
-	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success Update Book", responsData))
+	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Success Update Book", responsData))
 }
 
 func (c *BookHandler) DeleteBook(ctx echo.Context) error {
@@ -104,5 +104,5 @@ func (c *BookHandler) DeleteBook(ctx echo.Context) error {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
 	}
 
-	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "success Delete Book", nil))
+	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Success Delete Book", nil))
 }

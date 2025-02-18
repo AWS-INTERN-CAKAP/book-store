@@ -20,30 +20,38 @@ type BookService interface {
 }
 
 type bookService struct {
-	bookRepo repository.BookRepository
+	bookRepo     repository.BookRepository
+	categoryRepo repository.CategoryRepository
 }
 
-func NewBookService(bookRepo repository.BookRepository) BookService {
-	return &bookService{bookRepo: bookRepo}
+func NewBookService(bookRepo repository.BookRepository, categoryRepo repository.CategoryRepository) BookService {
+	return &bookService{bookRepo: bookRepo, categoryRepo: categoryRepo}
 }
 
 // CreateBook implements BookService.
 func (b *bookService) CreateBook(input binder.CreateBook) (*dto.BookResponse, *execption.ApiExecption) {
 
-	price, err := strconv.Atoi(input.Price)
-
+	var categories []*entity.Category
+	err := b.categoryRepo.FindByIDs(input.Categories, &categories)
 	if err != nil {
-		return nil, execption.NewApiExecption(http.StatusBadRequest, "Invalid price format")
+		return nil, execption.NewApiExecption(http.StatusBadRequest, "Invalid category IDs")
+	}
+
+	// Convert []*entity.Category to []entity.Category
+	var categoryValues []entity.Category
+	for _, category := range categories {
+		categoryValues = append(categoryValues, *category)
 	}
 
 	book := &entity.Book{
-		Title:     input.Title,
-		Price:     price,
-		ImagePath: input.ImagePath,
+		Title:       input.Title,
+		Price:       input.Price,
+		ImagePath:   input.ImagePath,
 		Description: input.Description,
+		Categories:  categoryValues,
 	}
 
-	book, err = b.bookRepo.Create(book)
+	book, err = b.bookRepo.Create(book, input.Categories)
 
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
@@ -55,8 +63,17 @@ func (b *bookService) CreateBook(input binder.CreateBook) (*dto.BookResponse, *e
 		Price:       book.Price,
 		ImagePath:   book.ImagePath,
 		Description: book.Description,
+		Categories:  []dto.CategoryResponse{},
 		CreatedAt:   book.CreatedAt.String(),
 		UpdatedAt:   book.UpdatedAt.String(),
+	}
+
+	for _, category := range categories {
+		categoryResponse := dto.CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		}
+		response.Categories = append(response.Categories, categoryResponse)
 	}
 
 	return response, nil
@@ -65,18 +82,31 @@ func (b *bookService) CreateBook(input binder.CreateBook) (*dto.BookResponse, *e
 // DeleteBook implements BookService.
 func (b *bookService) DeleteBook(bookID string) *execption.ApiExecption {
 	uintID, err := strconv.ParseUint(bookID, 10, 0)
-
 	if err != nil {
-		return  execption.NewApiExecption(http.StatusInternalServerError, err.Error())
+		return execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
 
-	err = b.bookRepo.Delete(uint(uintID))
-
+	// Check if the book exists before deletion
+	book, err := b.bookRepo.GetById(uint(uintID))
 	if err != nil {
-		if err == repository.ErrCBookNotFound {
-			return execption.NewApiExecption(http.StatusNotFound, err.Error())
+		if err == repository.ErrBookNotFound {
+			return execption.NewApiExecption(http.StatusNotFound, "Book not found")
 		}
-		return  execption.NewApiExecption(http.StatusInternalServerError, err.Error())
+		return execption.NewApiExecption(http.StatusInternalServerError, err.Error())
+	}
+
+	// Remove category associations (if applicable)
+	if len(book.Categories) > 0 {
+		err = b.bookRepo.Delete(uint(uintID)) // Ensure this function exists in the repository
+		if err != nil {
+			return execption.NewApiExecption(http.StatusInternalServerError, "Failed to remove category associations")
+		}
+	}
+
+	// Proceed with deletion
+	err = b.bookRepo.Delete(uint(uintID))
+	if err != nil {
+		return execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
 
 	return nil
@@ -96,12 +126,22 @@ func (b *bookService) GetBook(bookID string) (*dto.BookResponse, *execption.ApiE
 		return nil, execption.NewApiExecption(http.StatusNotFound, err.Error())
 	}
 
+	// Convert categories to response format
+	var categoryResponses []dto.CategoryResponse
+	for _, category := range book.Categories {
+		categoryResponses = append(categoryResponses, dto.CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
+
 	response := &dto.BookResponse{
 		ID:          book.ID,
 		Title:       book.Title,
 		Price:       book.Price,
 		ImagePath:   book.ImagePath,
 		Description: book.Description,
+		Categories:  categoryResponses,
 		CreatedAt:   book.CreatedAt.String(),
 		UpdatedAt:   book.UpdatedAt.String(),
 	}
@@ -112,7 +152,6 @@ func (b *bookService) GetBook(bookID string) (*dto.BookResponse, *execption.ApiE
 // GetBooks implements BookService.
 func (b *bookService) GetBooks() ([]*dto.BookResponse, *execption.ApiExecption) {
 	books, err := b.bookRepo.GetAll()
-
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
@@ -124,6 +163,15 @@ func (b *bookService) GetBooks() ([]*dto.BookResponse, *execption.ApiExecption) 
 	var responses []*dto.BookResponse
 
 	for _, book := range books {
+		// Convert categories to response format
+		var categoryResponses []dto.CategoryResponse
+		for _, category := range book.Categories {
+			categoryResponses = append(categoryResponses, dto.CategoryResponse{
+				ID:   category.ID,
+				Name: category.Name,
+			})
+		}
+
 		responses = append(responses, &dto.BookResponse{
 			ID:          book.ID,
 			Title:       book.Title,
@@ -132,6 +180,7 @@ func (b *bookService) GetBooks() ([]*dto.BookResponse, *execption.ApiExecption) 
 			Description: book.Description,
 			CreatedAt:   book.CreatedAt.String(),
 			UpdatedAt:   book.UpdatedAt.String(),
+			Categories:  categoryResponses, // Include categories in response
 		})
 	}
 
@@ -141,32 +190,47 @@ func (b *bookService) GetBooks() ([]*dto.BookResponse, *execption.ApiExecption) 
 // UpdateBook implements BookService.
 func (b *bookService) UpdateBook(input binder.UpdateBook) (*dto.BookResponse, *execption.ApiExecption) {
 	bookID, err := strconv.ParseUint(input.ID, 10, 0)
-
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
 
-	price, err := strconv.Atoi(input.Price)
-
+	// Retrieve categories by their IDs
+	var categories []*entity.Category
+	err = b.categoryRepo.FindByIDs(input.Categories, &categories)
 	if err != nil {
-		return nil, execption.NewApiExecption(http.StatusBadRequest, "Invalid price format")
+		return nil, execption.NewApiExecption(http.StatusBadRequest, "Invalid category IDs")
+	}
+
+	// Convert []*entity.Category to []entity.Category
+	var categoryValues []entity.Category
+	for _, category := range categories {
+		categoryValues = append(categoryValues, *category)
 	}
 
 	book := &entity.Book{
-		ID:   uint(bookID),
-		Title:     input.Title,
-		Price:     price,
-		ImagePath: input.ImagePath,
+		ID:          uint(bookID),
+		Title:       input.Title,
+		Price:       input.Price,
+		ImagePath:   input.ImagePath,
 		Description: input.Description,
+		Categories:  categoryValues, // Assign updated categories
 	}
 
-	book, err = b.bookRepo.Update(book)
-
+	book, err = b.bookRepo.Update(book, input.Categories)
 	if err != nil {
-		if err == repository.ErrCBookNotFound {
+		if err == repository.ErrBookNotFound {
 			return nil, execption.NewApiExecption(http.StatusNotFound, err.Error())
 		}
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
+	}
+
+	// Convert categories to response format
+	var categoryResponses []dto.CategoryResponse
+	for _, category := range categories {
+		categoryResponses = append(categoryResponses, dto.CategoryResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		})
 	}
 
 	response := &dto.BookResponse{
@@ -177,6 +241,7 @@ func (b *bookService) UpdateBook(input binder.UpdateBook) (*dto.BookResponse, *e
 		Description: book.Description,
 		CreatedAt:   book.CreatedAt.String(),
 		UpdatedAt:   book.UpdatedAt.String(),
+		Categories:  categoryResponses, // Include categories in response
 	}
 
 	return response, nil

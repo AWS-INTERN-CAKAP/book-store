@@ -5,18 +5,20 @@ type GetBook struct {
 }
 
 type CreateBook struct {
-	Title string `json:"name" validate:"required"`
-	Price string `json:"price" validate:"required"`
-	ImagePath string `json:"imagePath" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	Title       string  `json:"title" validate:"required"`
+	Price       int     `json:"price" validate:"required"`
+	ImagePath   string  `json:"imagePath" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Categories  []uint  `json:"categories" validate:"required"` // Accept category IDs
 }
 
 type UpdateBook struct {
-	ID   string `param:"id" validate:"required"`
-	Title string `json:"name" validate:"required"`
-	Price string `json:"price" validate:"required"`
-	ImagePath string `json:"imagePath" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	ID          string  `param:"id" validate:"required"`
+	Title       string  `json:"title" validate:"required"`
+	Price       int     `json:"price" validate:"required"`
+	ImagePath   string  `json:"imagePath" validate:"required"`
+	Description string  `json:"description" validate:"required"`
+	Categories  []uint  `json:"categories" validate:"required"` // Accept category IDs
 }
 
 type DeleteBook struct {

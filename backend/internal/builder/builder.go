@@ -16,7 +16,7 @@ func BuildAppPublicRoutes(db *gorm.DB, ) []*route.Route {
 	bookRepository := repository.NewBookRepository(db)
 
 	categoryService := service.NewCategoryService(categoryRepository)
-	bookService := service.NewBookService(bookRepository)
+	bookService := service.NewBookService(bookRepository, categoryRepository)
 	
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	bookHandler := handler.NewBookHandler(bookService)
