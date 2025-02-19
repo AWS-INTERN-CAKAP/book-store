@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import CreatableSelect from "react-select/creatable";
 
 function AddBook() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ function AddBook() {
     title: '',
     price: '',
     description: '',
-    categories: ''
+    categories: []
   });
   const [image, setImage] = useState(null);
 
@@ -20,13 +21,22 @@ function AddBook() {
     setImage(e.target.files[0]);
   };
 
+  const handleCategoryChange = (selectedOptions) => {
+    setBook({ ...book, categories: selectedOptions.map(option => option.value) });
+  };
+
+  const handleCreateCategory = (inputValue) => {
+    const newCategory = { value: inputValue, label: inputValue };
+    setBook({ ...book, categories: [...book.categories, newCategory.value] });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('title', book.title);
     formData.append('price', book.price);
     formData.append('description', book.description);
-    formData.append('categories', book.categories);
+    formData.append('categories', JSON.stringify(book.categories));
     formData.append('imagePath', image);
 
     try {
@@ -80,13 +90,12 @@ function AddBook() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Categories</label>
-          <input
-            type="text"
-            name="categories"
-            value={book.categories}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+          <CreatableSelect
+            isMulti
+            onChange={handleCategoryChange}
+            onCreateOption={handleCreateCategory}
+            value={book.categories.map(cat => ({ value: cat, label: cat }))}
+            className="mt-1"
           />
         </div>
         <div>
