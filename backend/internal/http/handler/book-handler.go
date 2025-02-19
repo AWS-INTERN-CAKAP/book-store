@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/aws-cakap-intern/book-store/internal/http/binder"
 	"github.com/aws-cakap-intern/book-store/internal/service"
@@ -33,7 +36,7 @@ func (c *BookHandler) GetBook(ctx echo.Context) error {
 	if err := ctx.Bind(&input); err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
-	
+
 	if errorMessage, data := checkValidation(input); errorMessage != "" {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
 	}
@@ -53,9 +56,21 @@ func (c *BookHandler) CreateBook(ctx echo.Context) error {
 	if err := ctx.Bind(&input); err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
-	
+
 	if errorMessage, data := checkValidation(input); errorMessage != "" {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
+	}
+
+	categories := ctx.FormValue("categories")
+
+	if categories == "" {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Categories field is required"))
+	}
+
+	parsedCategories, err := c.parseCategories(categories)
+
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
 
 	file, fileHeader, err := ctx.Request().FormFile("image")
@@ -64,7 +79,7 @@ func (c *BookHandler) CreateBook(ctx echo.Context) error {
 	}
 	defer file.Close()
 
-	responsData, execption := c.bookService.CreateBook(input, file, fileHeader)
+	responsData, execption := c.bookService.CreateBook(input, parsedCategories, file, fileHeader)
 
 	if execption != nil {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
@@ -79,9 +94,21 @@ func (c *BookHandler) UpdateBook(ctx echo.Context) error {
 	if err := ctx.Bind(&input); err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
-	
+
 	if errorMessage, data := checkValidation(input); errorMessage != "" {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
+	}
+
+	categories := ctx.FormValue("categories")
+
+	if categories == "" {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Categories field is required"))
+	}
+
+	parsedCategories, err := c.parseCategories(categories)
+
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
 
 	file, fileHeader, err := ctx.Request().FormFile("image")
@@ -90,7 +117,7 @@ func (c *BookHandler) UpdateBook(ctx echo.Context) error {
 	}
 	defer file.Close()
 
-	responsData, execption := c.bookService.UpdateBook(input, file, fileHeader)
+	responsData, execption := c.bookService.UpdateBook(input, parsedCategories, file, fileHeader)
 
 	if execption != nil {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
@@ -105,7 +132,7 @@ func (c *BookHandler) DeleteBook(ctx echo.Context) error {
 	if err := ctx.Bind(&input); err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
-	
+
 	if errorMessage, data := checkValidation(input); errorMessage != "" {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
 	}
@@ -117,4 +144,19 @@ func (c *BookHandler) DeleteBook(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Success Delete Book", nil))
+}
+
+func (c *BookHandler) parseCategories(categories string) ([]uint, error) {
+	categoryStrings := strings.Split(categories, ",")
+
+	var categoryIDs []uint
+	for _, str := range categoryStrings {
+		id, err := strconv.ParseUint(str, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid category ID: %s", str)
+		}
+		categoryIDs = append(categoryIDs, uint(id))
+	}
+
+	return categoryIDs, nil
 }
