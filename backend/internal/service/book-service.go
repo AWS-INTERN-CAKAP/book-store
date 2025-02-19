@@ -21,8 +21,8 @@ import (
 type BookService interface {
 	GetBooks() ([]*dto.BookResponse, *execption.ApiExecption)
 	GetBook(bookID string) (*dto.BookResponse, *execption.ApiExecption)
-	CreateBook(input binder.CreateBook, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption)
-	UpdateBook(input binder.UpdateBook, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption)
+	CreateBook(input binder.CreateBook, categoryIDS []uint, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption)
+	UpdateBook(input binder.UpdateBook, categoryIDS []uint, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption)
 	DeleteBook(bookID string) *execption.ApiExecption
 }
 
@@ -36,14 +36,14 @@ func NewBookService(bookRepo repository.BookRepository, categoryRepo repository.
 }
 
 // CreateBook implements BookService.
-func (b *bookService) CreateBook(input binder.CreateBook, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption) {
+func (b *bookService) CreateBook(input binder.CreateBook, categoryIDS []uint, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption) {
 	var categories []*entity.Category
-	err := b.categoryRepo.FindByIDs(input.Categories, &categories)
+	err := b.categoryRepo.FindByIDs(categoryIDS, &categories)
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, "Error retrieving categories")
 	}
 
-	if len(categories) != len(input.Categories) {
+	if len(categories) != len(categoryIDS) {
 		return nil, execption.NewApiExecption(http.StatusBadRequest, "Some category IDs do not exist")
 	}
 
@@ -63,7 +63,7 @@ func (b *bookService) CreateBook(input binder.CreateBook, file multipart.File, f
 		Categories:  convertCategories(categories),
 	}
 
-	book, err = b.bookRepo.Create(book, input.Categories)
+	book, err = b.bookRepo.Create(book, categoryIDS)
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
@@ -90,8 +90,6 @@ func (b *bookService) CreateBook(input binder.CreateBook, file multipart.File, f
 	return response, nil
 
 }
-
-
 
 // DeleteBook implements BookService.
 func (b *bookService) DeleteBook(bookID string) *execption.ApiExecption {
@@ -211,20 +209,20 @@ func (b *bookService) GetBooks() ([]*dto.BookResponse, *execption.ApiExecption) 
 }
 
 // UpdateBook implements BookService.
-func (b *bookService) UpdateBook(input binder.UpdateBook, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption) {
+func (b *bookService) UpdateBook(input binder.UpdateBook, categoryIDS []uint, file multipart.File, fileHeader *multipart.FileHeader) (*dto.BookResponse, *execption.ApiExecption) {
 	bookID, err := strconv.ParseUint(input.ID, 10, 0)
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, err.Error())
 	}
 
 	var categories []*entity.Category
-	err = b.categoryRepo.FindByIDs(input.Categories, &categories)
+	err = b.categoryRepo.FindByIDs(categoryIDS, &categories)
 	if err != nil {
 		return nil, execption.NewApiExecption(http.StatusInternalServerError, "Error retrieving categories")
 	}
 
 	// Ensure all requested categories exist
-	if len(categories) != len(input.Categories) {
+	if len(categories) != len(categoryIDS) {
 		return nil, execption.NewApiExecption(http.StatusBadRequest, "Some category IDs do not exist")
 	}
 
@@ -256,7 +254,7 @@ func (b *bookService) UpdateBook(input binder.UpdateBook, file multipart.File, f
 		Categories:  convertCategories(categories), // Assign updated categories
 	}
 
-	book, err = b.bookRepo.Update(book, input.Categories)
+	book, err = b.bookRepo.Update(book, categoryIDS)
 	if err != nil {
 		if err == repository.ErrBookNotFound {
 			return nil, execption.NewApiExecption(http.StatusNotFound, err.Error())

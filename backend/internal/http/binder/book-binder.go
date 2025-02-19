@@ -7,20 +7,18 @@ type GetBook struct {
 }
 
 type CreateBook struct {
-	Title       string                `form:"title" binding:"required"`
-	Price       int               `form:"price" binding:"required"`
-	Description string                `form:"description" binding:"required"`
-	Categories  []uint                `form:"categories" binding:"required"`
-	Image       *multipart.FileHeader `form:"image" binding:"required"`
+	Title       string                `form:"title" validate:"required"`
+	Price       int                   `form:"price" validate:"required"`
+	Description string                `form:"description" validate:"required"`
+	Image       *multipart.FileHeader `form:"image" validate:"required"`
 }
 
 type UpdateBook struct {
 	ID          string                `param:"id" validate:"required"`
-	Title       string                `form:"title" binding:"required"`
-	Price       int               `form:"price" binding:"required"`
-	Description string                `form:"description" binding:"required"`
-	Categories  []uint                `form:"categories" binding:"required"`
-	Image       *multipart.FileHeader `form:"image" binding:"required"`
+	Title       string                `form:"title" validate:"required"`
+	Price       int                   `form:"price" validate:"required"`
+	Description string                `form:"description" validate:"required"`
+	Image       *multipart.FileHeader `form:"image" validate:"required"`
 }
 
 type DeleteBook struct {
