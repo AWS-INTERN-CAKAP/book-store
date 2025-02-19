@@ -28,6 +28,7 @@ services:
       - db
     networks:
       - myapp-network
+    restart: on-failure
 
   backend:
     build:
@@ -47,6 +48,7 @@ services:
       - db
     networks:
       - myapp-network
+    restart: on-failure
   
   frontend:
     build:
@@ -63,6 +65,7 @@ services:
       - backend
     networks:
       - myapp-network
+    restart: on-failure
 
 networks:
   myapp-network:

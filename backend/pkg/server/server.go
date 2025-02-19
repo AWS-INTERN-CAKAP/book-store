@@ -24,6 +24,8 @@ func NewServer(publicRoutes []*route.Route) *Server {
 
 	e.Use(middleware.CORS())
 
+	e.Static("/api/uploads", "uploads")
+
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, response.SuccessResponse(http.StatusOK, "Hello, World!", nil))
 	})
