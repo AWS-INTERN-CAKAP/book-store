@@ -33,8 +33,8 @@ cd book-store
 If your application requires environment variables, copy the env.example file in both the backend and frontend directories and rename it to .env
 
 ```bash
-cp ./backend/.env.example backend/.env
-cp ./frontend/.env.example frontend/.env
+cp ./backend/.env.example ./backend/.env
+cp ./frontend/.env.example ./frontend/.env
 ```
 
 3. Run the application using Docker Compose:
