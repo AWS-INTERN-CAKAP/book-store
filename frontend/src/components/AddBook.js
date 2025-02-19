@@ -5,10 +5,10 @@ import axios from 'axios';
 function AddBook() {
   const navigate = useNavigate();
   const [book, setBook] = useState({
-    namaBuku: '',
-    harga: '',
-    deskripsi: '',
-    category: ''
+    title: '',
+    price: '',
+    description: '',
+    categories: ''
   });
   const [image, setImage] = useState(null);
 
@@ -23,11 +23,11 @@ function AddBook() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('namaBuku', book.namaBuku);
-    formData.append('harga', book.harga);
-    formData.append('deskripsi', book.deskripsi);
-    formData.append('category', book.category);
-    formData.append('image', image);
+    formData.append('title', book.title);
+    formData.append('price', book.price);
+    formData.append('description', book.description);
+    formData.append('categories', book.categories);
+    formData.append('imagePath', image);
 
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/books`, formData, {
@@ -46,11 +46,11 @@ function AddBook() {
       <h1 className="text-3xl font-bold mb-6">Add New Book</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Book Name</label>
+          <label className="block text-sm font-medium text-gray-700">Title</label>
           <input
             type="text"
-            name="namaBuku"
-            value={book.namaBuku}
+            name="title"
+            value={book.title}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
@@ -60,8 +60,8 @@ function AddBook() {
           <label className="block text-sm font-medium text-gray-700">Price</label>
           <input
             type="number"
-            name="harga"
-            value={book.harga}
+            name="price"
+            value={book.price}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
@@ -70,8 +70,8 @@ function AddBook() {
         <div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
-            name="deskripsi"
-            value={book.deskripsi}
+            name="description"
+            value={book.description}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             rows="3"
@@ -79,11 +79,11 @@ function AddBook() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <label className="block text-sm font-medium text-gray-700">Categories</label>
           <input
             type="text"
-            name="category"
-            value={book.category}
+            name="categories"
+            value={book.categories}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required

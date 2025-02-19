@@ -63,8 +63,9 @@ function BookList() {
             <div key={book.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               {book.imagePath && (
                 <img
-                  src={`${process.env.REACT_APP_API_URL}/${book.imagePath}`}
-                  alt={book.namaBuku}
+                  src={`${process.env.REACT_APP_API_URL}/uploads/${book.imagePath}`}
+                  alt={book.title}
+
                   className="w-full h-48 object-cover"
                   // onError={(e) => {
                   //   e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
