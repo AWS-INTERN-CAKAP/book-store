@@ -58,7 +58,13 @@ func (c *BookHandler) CreateBook(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
 	}
 
-	responsData, execption := c.bookService.CreateBook(input)
+	file, fileHeader, err := ctx.Request().FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to get file"))
+	}
+	defer file.Close()
+
+	responsData, execption := c.bookService.CreateBook(input, file, fileHeader)
 
 	if execption != nil {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))
@@ -78,7 +84,13 @@ func (c *BookHandler) UpdateBook(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.SuccessResponse(http.StatusBadRequest, errorMessage, data))
 	}
 
-	responsData, execption := c.bookService.UpdateBook(input)
+	file, fileHeader, err := ctx.Request().FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to get file"))
+	}
+	defer file.Close()
+
+	responsData, execption := c.bookService.UpdateBook(input, file, fileHeader)
 
 	if execption != nil {
 		return ctx.JSON(execption.Status, response.ErrorResponse(execption.Status, execption.Message))

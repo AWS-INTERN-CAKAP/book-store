@@ -1,24 +1,26 @@
 package binder
 
+import "mime/multipart"
+
 type GetBook struct {
 	ID string `param:"id" validate:"required"`
 }
 
 type CreateBook struct {
-	Title       string  `json:"title" validate:"required"`
-	Price       int     `json:"price" validate:"required"`
-	ImagePath   string  `json:"imagePath" validate:"required"`
-	Description string  `json:"description" validate:"required"`
-	Categories  []uint  `json:"categories" validate:"required"` // Accept category IDs
+	Title       string                `form:"title" binding:"required"`
+	Price       int               `form:"price" binding:"required"`
+	Description string                `form:"description" binding:"required"`
+	Categories  []uint                `form:"categories" binding:"required"`
+	Image       *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 type UpdateBook struct {
-	ID          string  `param:"id" validate:"required"`
-	Title       string  `json:"title" validate:"required"`
-	Price       int     `json:"price" validate:"required"`
-	ImagePath   string  `json:"imagePath" validate:"required"`
-	Description string  `json:"description" validate:"required"`
-	Categories  []uint  `json:"categories" validate:"required"` // Accept category IDs
+	ID          string                `param:"id" validate:"required"`
+	Title       string                `form:"title" binding:"required"`
+	Price       int               `form:"price" binding:"required"`
+	Description string                `form:"description" binding:"required"`
+	Categories  []uint                `form:"categories" binding:"required"`
+	Image       *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 type DeleteBook struct {
