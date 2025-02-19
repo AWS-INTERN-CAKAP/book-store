@@ -15,9 +15,9 @@ Book Store App is a full-stack application consisting of a frontend built with R
 # Prerequisites
 Before running the application, ensure you have the following installed on your system:
 
-- Docker
+- [Docker](https://www.docker.com/)
 
-- Docker Compose
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 # Setup & Installation
 
