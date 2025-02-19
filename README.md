@@ -29,6 +29,7 @@ cd book-store
 ```
 
 2. Create a .env file (optional, if needed)
+
 If your application requires environment variables, copy the env.example file in both the backend and frontend directories and rename it to .env
 
 ```bash
