@@ -12,7 +12,7 @@ function BookList() {
 
   const fetchBooks = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/books`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/books`);
       setBooks(response.data.data);
       setError(null);
     } catch (error) {
@@ -24,7 +24,7 @@ function BookList() {
   const deleteBook = async (id) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/api/books/${id}`);
+        await axios.delete(`${process.env.REACT_APP_API_URL}/books/${id}`);
         fetchBooks();
       } catch (error) {
         console.error('Error deleting book:', error);
