@@ -61,10 +61,10 @@ function BookList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {books.map((book) => (
             <div key={book.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              {book.path_gambar && (
+              {book.imagePath && (
                 <img
-                  src={`${process.env.REACT_APP_API_URL}/uploads/${book.path_gambar}`}
-                  alt={book.namaBuku}
+                  src={`${process.env.REACT_APP_API_URL}/uploads/${book.imagePath}`}
+                  alt={book.title}
                   className="w-full h-48 object-cover"
                   onError={(e) => {
                     e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
@@ -72,9 +72,9 @@ function BookList() {
                 />
               )}
               <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{book.namaBuku}</h2>
-                <p className="text-gray-600 mb-2">Price: ${book.harga}</p>
-                <p className="text-gray-600 mb-4">{book.deskripsi}</p>
+                <h2 className="text-xl font-semibold mb-2">{book.title}</h2>
+                <p className="text-gray-600 mb-2">Price: ${book.price}</p>
+                <p className="text-gray-600 mb-4">{book.description}</p>
                 <div className="flex justify-between">
                   <Link
                     to={`/edit/${book.id}`}
