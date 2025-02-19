@@ -12,8 +12,8 @@ function BookList() {
 
   const fetchBooks = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/books`);
-      setBooks(response.data);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/books`);
+      setBooks(response.data.data);
       setError(null);
     } catch (error) {
       console.error('Error fetching books:', error);
@@ -24,7 +24,7 @@ function BookList() {
   const deleteBook = async (id) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/books/${id}`);
+        await axios.delete(`${process.env.REACT_APP_API_URL}/api/books/${id}`);
         fetchBooks();
       } catch (error) {
         console.error('Error deleting book:', error);
@@ -65,10 +65,11 @@ function BookList() {
                 <img
                   src={`${process.env.REACT_APP_API_URL}/uploads/${book.imagePath}`}
                   alt={book.title}
+
                   className="w-full h-48 object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                  }}
+                  // onError={(e) => {
+                  //   e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                  // }}
                 />
               )}
               <div className="p-4">

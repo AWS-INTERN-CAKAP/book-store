@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS book_category (
+CREATE TABLE IF NOT EXISTS book_categories (
     book_id INT NOT NULL,
     category_id INT NOT NULL,
     PRIMARY KEY (book_id, category_id),
