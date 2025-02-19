@@ -60,8 +60,8 @@ function AddBook() {
     formData.append('title', book.title);
     formData.append('price', book.price);
     formData.append('description', book.description);
-    formData.append('categories', JSON.stringify(book.categories));
-    formData.append('imagePath', image);
+    formData.append('categories', book.categories);
+    formData.append('image', image);
 
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/books`, formData, {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import CreatableSelect from "react-select/creatable";
 
 function EditBook() {
   const navigate = useNavigate();
@@ -9,21 +10,57 @@ function EditBook() {
     title: '',
     price: '',
     description: '',
-    categories: ''
+    categories: [],
   });
+  const [categories, setCategories] = useState([]);
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    fetchBook();
-  }, []);
+    const fetchBook = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/books/${id}`);
+        setBook({
+          title: response.data.title,
+          price: response.data.price,
+          description: response.data.description,
+          categories: response.data.categories,
+        });
+      } catch (error) {
+        console.error('Error fetching book:', error);
+      }
+    };
 
-  const fetchBook = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/books/${id}`);
-      setBook(response.data);
-    } catch (error) {
-      console.error('Error fetching book:', error);
-    }
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/categories`);
+        const formattedCategories = response.data.data.map(cat => ({
+          value: cat.id,
+          label: cat.name,
+        }));
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchBook();
+    fetchCategories();
+  }, [id]);
+
+  const handleCategoryChange = (selectedOptions) => {
+    setBook({ 
+      ...book, 
+      categories: selectedOptions.map(option => option.value) 
+    });
+  };
+
+  const handleCreateCategory = (inputValue) => {
+    const newCategory = { value: `temp-${Date.now()}`, label: inputValue };
+    setCategories([...categories, newCategory]);
+    setBook({ 
+      ...book, 
+      categories: [...book.categories, newCategory.value] 
+    });
   };
 
   const handleChange = (e) => {
@@ -42,7 +79,7 @@ function EditBook() {
     formData.append('description', book.description);
     formData.append('categories', book.categories);
     if (image) {
-      formData.append('imagePath', image);
+      formData.append('image', image);
     }
 
     try {
@@ -96,13 +133,13 @@ function EditBook() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Categories</label>
-          <input
-            type="text"
-            name="categories"
-            value={book.categories}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+          <CreatableSelect
+            isMulti
+            options={categories}
+            onChange={handleCategoryChange}
+            onCreateOption={handleCreateCategory}
+            value={book.categories.map(catId => categories.find(cat => cat.value === catId) || { value: catId, label: catId })}
+            className="mt-1"
           />
         </div>
         <div>
