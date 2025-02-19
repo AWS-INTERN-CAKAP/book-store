@@ -15,6 +15,7 @@ type CategoryRepository interface {
 	Delete(id uint) error
 	GetAll() ([]entity.Category, error)
 	GetById(id uint) (*entity.Category, error)
+	FindByIDs(ids []uint, categories *[]*entity.Category) error
 }
 
 type categoryRepository struct {
@@ -27,7 +28,7 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 
 func (r *categoryRepository) Create(category *entity.Category) (*entity.Category, error) {
 	if err := r.db.Create(category).Error; err != nil {
-		return nil,err
+		return nil, err
 	}
 	return category, nil
 }
@@ -67,3 +68,9 @@ func (r *categoryRepository) GetById(id uint) (*entity.Category, error) {
 	return &category, nil
 }
 
+func (c *categoryRepository) FindByIDs(ids []uint, categories *[]*entity.Category) error {
+	if err := c.db.Where("id IN (?)", ids).Find(categories).Error; err != nil {
+		return err
+	}
+	return nil
+}

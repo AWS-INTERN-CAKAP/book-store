@@ -4,10 +4,11 @@ import "github.com/aws-cakap-intern/book-store/pkg/validator"
 
 type AppHandler struct {
 	CategoryHandler *CategotyHandler
+	BookHandler *BookHandler
 }
 
-func NewAppHandler(categoryHandler *CategotyHandler) AppHandler {
-	return AppHandler{CategoryHandler: categoryHandler}
+func NewAppHandler(categoryHandler *CategotyHandler, bookHandler *BookHandler) AppHandler {
+	return AppHandler{CategoryHandler: categoryHandler, BookHandler: bookHandler}
 }
 
 func checkValidation(input interface{}) (errorMessage string, data interface{}) {

@@ -9,6 +9,7 @@ import (
 
 func AppPublicRoutes(appHandler handler.AppHandler) []*route.Route {
 	categoryHandler := appHandler.CategoryHandler
+	bookHandler := appHandler.BookHandler
 	
 	return []*route.Route{
 			{
@@ -35,6 +36,31 @@ func AppPublicRoutes(appHandler handler.AppHandler) []*route.Route {
 				Method: http.MethodDelete,
 				Path: "/categories/:id",
 				Handler: categoryHandler.DeleteCategory,
+			},
+			{
+				Method: http.MethodGet,
+				Path: "/books",
+				Handler: bookHandler.GetBooks,
+			},
+			{
+				Method: http.MethodGet,
+				Path: "/books/:id",
+				Handler: bookHandler.GetBook,
+			},
+			{
+				Method: http.MethodPost,
+				Path: "/books",
+				Handler: bookHandler.CreateBook,
+			},
+			{
+				Method: http.MethodPut,
+				Path: "/books/:id",
+				Handler: bookHandler.UpdateBook,
+			},
+			{
+				Method: http.MethodDelete,
+				Path: "/books/:id",
+				Handler: bookHandler.DeleteBook,
 			},
 	}
 }
