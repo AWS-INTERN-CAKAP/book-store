@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CreatableSelect from "react-select/creatable";
@@ -9,9 +9,42 @@ function AddBook() {
     title: '',
     price: '',
     description: '',
-    categories: []
+    categories: [],
   });
+  const [categories, setCategories] = useState([]);
   const [image, setImage] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/categories`);
+        const formattedCategories = response.data.data.map(cat => ({
+          value: cat.id,
+          label: cat.name,
+        }));
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleCategoryChange = (selectedOptions) => {
+    setBook({ 
+      ...book, 
+      categories: selectedOptions.map(option => option.value) 
+    });
+  };
+
+  const handleCreateCategory = (inputValue) => {
+    const newCategory = { value: `temp-${Date.now()}`, label: inputValue };
+    setCategories([...categories, newCategory]);
+    setBook({ 
+      ...book, 
+      categories: [...book.categories, newCategory.value] 
+    });
+  };
 
   const handleChange = (e) => {
     setBook({ ...book, [e.target.name]: e.target.value });
@@ -19,15 +52,6 @@ function AddBook() {
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
-  };
-
-  const handleCategoryChange = (selectedOptions) => {
-    setBook({ ...book, categories: selectedOptions.map(option => option.value) });
-  };
-
-  const handleCreateCategory = (inputValue) => {
-    const newCategory = { value: inputValue, label: inputValue };
-    setBook({ ...book, categories: [...book.categories, newCategory.value] });
   };
 
   const handleSubmit = async (e) => {
@@ -92,9 +116,10 @@ function AddBook() {
           <label className="block text-sm font-medium text-gray-700">Categories</label>
           <CreatableSelect
             isMulti
+            options={categories}
             onChange={handleCategoryChange}
             onCreateOption={handleCreateCategory}
-            value={book.categories.map(cat => ({ value: cat, label: cat }))}
+            value={book.categories.map(catId => categories.find(cat => cat.value === catId) || { value: catId, label: catId })}
             className="mt-1"
           />
         </div>
