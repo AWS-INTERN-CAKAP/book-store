@@ -61,9 +61,9 @@ function BookList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {books.map((book) => (
             <div key={book.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              {book.image && (
+              {book.imagePath && (
                 <img
-                  src={`${process.env.REACT_APP_API_URL}/${book.image}`}
+                  src={`${process.env.REACT_APP_API_URL}/${book.imagePath}`}
                   alt={book.title}
 
                   className="w-full h-48 object-cover"
