@@ -18,7 +18,7 @@ type UpdateBook struct {
 	Title       string                `form:"title" validate:"required"`
 	Price       int                   `form:"price" validate:"required"`
 	Description string                `form:"description" validate:"required"`
-	Image       *multipart.FileHeader `form:"image" validate:"required"`
+	Image       *multipart.FileHeader `form:"image"`
 }
 
 type DeleteBook struct {

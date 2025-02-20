@@ -19,12 +19,15 @@ function EditBook() {
     const fetchBook = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/books/${id}`);
-        setBook({
-          title: response.data.title,
-          price: response.data.price,
-          description: response.data.description,
-          categories: response.data.categories,
+        const data = response.data.data
+
+        setBook({ 
+          title: data.title,  
+          price: data.price,
+          description: data.description,
+          categories: data.categories,
         });
+
       } catch (error) {
         console.error('Error fetching book:', error);
       }
@@ -45,22 +48,41 @@ function EditBook() {
 
     fetchBook();
     fetchCategories();
-  }, [id]);
+  }, []);
 
   const handleCategoryChange = (selectedOptions) => {
-    setBook({ 
-      ...book, 
-      categories: selectedOptions.map(option => option.value) 
-    });
+    const filteredCategories = categories.filter(category =>
+      selectedOptions.some(option => option.value == category.value)
+    );
+
+    const formattedCategories = filteredCategories.map(category =>( {
+      id: category.value,
+      name: category.label
+    }))
+  
+
+    setBook(prevBook => ({ ...prevBook, categories: formattedCategories }));
   };
 
-  const handleCreateCategory = (inputValue) => {
-    const newCategory = { value: `temp-${Date.now()}`, label: inputValue };
-    setCategories([...categories, newCategory]);
-    setBook({ 
-      ...book, 
-      categories: [...book.categories, newCategory.value] 
-    });
+  const handleCreateCategory = async (inputValue) => {
+    try {
+      
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/categories`, {
+        name: inputValue
+      });
+
+      const data = response.data.data
+      const newCategory = { value: data.id, label: data.name }
+      const bookCategory = {id: data.id, name: data.name}
+
+
+      setCategories(prevCategories => [...prevCategories,newCategory]);
+      setBook(prevBook => ({ ...prevBook, categories: [...prevBook.categories, bookCategory] }));
+
+    } catch (error) {
+      console.error('Error create category:', error)
+    }
+    
   };
 
   const handleChange = (e) => {
@@ -73,11 +95,12 @@ function EditBook() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log()
     const formData = new FormData();
     formData.append('title', book.title);
     formData.append('price', book.price);
     formData.append('description', book.description);
-    formData.append('categories', book.categories);
+    formData.append('categories', book.categories.map((categories) => categories.id));
     if (image) {
       formData.append('image', image);
     }
@@ -106,7 +129,7 @@ function EditBook() {
             value={book.title}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+            
           />
         </div>
         <div>
@@ -117,7 +140,7 @@ function EditBook() {
             value={book.price}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+            
           />
         </div>
         <div>
@@ -128,7 +151,7 @@ function EditBook() {
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             rows="3"
-            required
+            
           />
         </div>
         <div>
@@ -138,7 +161,7 @@ function EditBook() {
             options={categories}
             onChange={handleCategoryChange}
             onCreateOption={handleCreateCategory}
-            value={book.categories.map(catId => categories.find(cat => cat.value === catId) || { value: catId, label: catId })}
+            value={book.categories.map(cat => ({ value: cat.id, label: cat.name }))}
             className="mt-1"
           />
         </div>

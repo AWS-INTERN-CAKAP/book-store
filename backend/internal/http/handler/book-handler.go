@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -111,11 +112,20 @@ func (c *BookHandler) UpdateBook(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, err.Error()))
 	}
 
-	file, fileHeader, err := ctx.Request().FormFile("image")
+	var file multipart.File
+	var fileHeader *multipart.FileHeader
+
+	file, fileHeader, err = ctx.Request().FormFile("image")
+
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to get file"))
+		if err != http.ErrMissingFile {
+			return ctx.JSON(http.StatusBadRequest, response.ErrorResponse(http.StatusBadRequest, "Failed to get file"))
+		}
+		file = nil
+		fileHeader = nil
+	} else {
+		defer file.Close()
 	}
-	defer file.Close()
 
 	responsData, execption := c.bookService.UpdateBook(input, parsedCategories, file, fileHeader)
 

@@ -246,15 +246,16 @@ func (b *bookService) UpdateBook(input binder.UpdateBook, categoryIDS []uint, fi
 		book.ImagePath = imagePath
 	}
 
-	book = &entity.Book{
+	updatedBook := &entity.Book{
 		ID:          uint(bookID),
 		Title:       input.Title,
 		Price:       input.Price,
+		ImagePath:   book.ImagePath,
 		Description: input.Description,
 		Categories:  convertCategories(categories), // Assign updated categories
 	}
 
-	book, err = b.bookRepo.Update(book, categoryIDS)
+	book, err = b.bookRepo.Update(updatedBook, categoryIDS)
 	if err != nil {
 		if err == repository.ErrBookNotFound {
 			return nil, execption.NewApiExecption(http.StatusNotFound, err.Error())

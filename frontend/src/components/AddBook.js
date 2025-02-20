@@ -37,13 +37,22 @@ function AddBook() {
     });
   };
 
-  const handleCreateCategory = (inputValue) => {
-    const newCategory = { value: `temp-${Date.now()}`, label: inputValue };
-    setCategories([...categories, newCategory]);
-    setBook({ 
-      ...book, 
-      categories: [...book.categories, newCategory.value] 
-    });
+  const handleCreateCategory = async (inputValue) => {
+    try {
+      
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/categories`, {
+        name: inputValue
+      });
+
+      const data = response.data.data
+      const newCategory = { value: data.id, label: data.name }
+
+      setCategories(prevCategories => [...prevCategories,newCategory]);
+      setBook(prevBook => ({ ...prevBook, categories: [...prevBook.categories, newCategory.value] }));
+
+    } catch (error) {
+      console.error('Error create category:', error)
+    }
   };
 
   const handleChange = (e) => {
